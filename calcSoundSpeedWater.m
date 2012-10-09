@@ -24,7 +24,7 @@ function c = calcSoundSpeedWater(varargin)
 %      0 <= D <= 8000
 %
 % Default values:
-%   T = 20 deg. C
+%   T = 10 deg. C
 %   S = 35 ppt
 %   D = 100 m
 %
@@ -35,7 +35,7 @@ function c = calcSoundSpeedWater(varargin)
 %     Oceans, J. Acoust. Soc. Am., 70:807
 
 % Default user parameters
-T = 20;
+T = 10;
 S = 35;
 D = 100;
 
