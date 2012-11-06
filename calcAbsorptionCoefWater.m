@@ -43,21 +43,8 @@ function varargout = calcAbsorptionCoefWater(f,varargin)
 % See following references for more info:
 %    Urick 1983 "Principles of underwater sound" 3rd Edition, Penninsula
 %        Publishing, pg. 102-111
-%    Thorp
-%    Fletcher and Simmons
-
-%    Bass et al 1995 "Atmospheric absorption of sound: Further developments" J.
-%        Acoust. Soc. Am. 97 (1)
-%    Bass et al 1990 "Atmospheric absorption of sound: Update" J. Acoust. Soc.
-%        Am. 88 (4)
-%    Benny et al 2000 "Beam profile measurements and simulations for ultrasonic
-%        transducers operating in air" J. Acoust. Soc. Am. 107 (4)
-%    ANSI S1.26-1995, "American National Standard Method for the Calculation of
-%        the Absorption of Sound by the Atmosphere"
-%    ISO 9613-1:1993, "Acoustics - Attenuation of sound during propagation
-%        outdoors - Part 1: Calculation of the absorption of sound by the
-%        atmosphere"
-%
+%    Fisher and Simmons 1977 "Sound absorption in sea water" J. Acoust.
+%        Soc. Am. 62 (3)
 
 % assign default values
 D = 100;
@@ -65,7 +52,7 @@ T = 10;
 S = 35;
 pH = 8;
 
-warning('This function computes alpha based on Thorp''s equation, which is valid for T=4 degC, D=1 kyd.  Need to implement Fletcher and Simmons'' eqn.!')
+mode = 'fisher';
 
 switch nargin
     case 4
@@ -90,19 +77,51 @@ end
 
 f = f(:);           % force frequency vector into column vector
 
+switch mode
+    case 'thorp'
+        warning('This function computes alpha based on Thorp''s equation, which is valid for T=4 degC, D=1 kyd.')
+        % calculate absorption at zero depth (based on eq. by Thorp)
+        % assumes temperature of 4 deg. C and depth of 3000 ft.
+        alpha = (0.1 * f.^2)./(1 + f.^2) + (40 * f.^2)./(4100 + f.^2) + 2.75e-4 * f.^2 + 0.003;
+        
+        
+        % adjust for depth
+        if D > 0
+            Dhat = D * 3.2808399;       % convert depth in m to ft
+            alpha = alpha * (1 - 1.93e-5*Dhat);
+        end
+        
+        
+        % convert to dB/m units from dB/ky
+        alpha = alpha ./ 304.8;
 
-% calculate absorption at zero depth (based on eq. by Thorp)
-% assumes temperature of 4 deg. C and depth of 3000 ft.
-alpha = (0.1 * f.^2)./(1 + f.^2) + (40 * f.^2)./(4100 + f.^2) + 2.75e-4 * f.^2 + 0.003;
 
-% % adjust for depth
-% if D > 0
-%     Dhat = D * 3.2808399;       % convert depth in m to ft
-%     alpha = alpha * (1 - 1.93e-5*Dhat);
-% end
-% 
-% % convert to dB/m units from dB/ky
-% alpha = alpha ./ 304.8;
+    case 'fisher'
+        
+        % convert depth to pressure
+        rho = 1025;  % density of sea water [kg/m³]
+        P = D/10; % approximation!  [atm]
+        P = 1;  % 0 depth
+        
+        A1 = (1.03e-8 + 2.36e-10 * T - 5.22e-12 * T.^2);
+        A2 = (5.62e-8 + 7.52e-10 * T);
+        A3 = (55.9 - 2.37 * T + 4.77e-2 * T.^2 - 3.48e-4 .* T.^3) .* 1e-15;
+        
+        f1 = 1.32e3 * (T + 273.1) * exp(-1700 / (T + 273.1));
+        f2 = 1.55e7 * (T + 273.1) * exp(-3052 / (T + 273.1));
+        
+        P2 = 1 - 10.3e-4 * P + 3.7e-7;
+        P3 = 1 - 3.84e-4 * P + 7.57e-8;
+        
+        alpha = A1.*f1.*f.^2 ./ (f1.^2 + f.^2) + ...
+            A2.*P2.*f2.*f.^2 ./ (f2.^2 + f.^2) + ...
+            A3.*P3.*f.^2;
+        
+        % convert to dB/km units from /m
+        alpha = alpha * 8686;
+        
+end
+
 
 % generate plot if no output arguments present
 if (length(f)>1 && nargout==0)
@@ -110,7 +129,7 @@ if (length(f)>1 && nargout==0)
     grid on
     xlabel('Frequency/pressure (Hz)')
     %ylabel('Absorption coefficient \alpha (dB / m)')
-    ylabel('Absorption coefficient \alpha (dB / kyd)')
+    ylabel('Absorption coefficient \alpha (dB / km)')
     title(sprintf('Atmospheric absorption coef. (T=%.1fC, D=%.1fm, S=%.1fppt, pH=%.1f)',T,D,S,pH))
 else
     varargout{1} = alpha;
