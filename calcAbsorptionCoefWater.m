@@ -4,8 +4,8 @@ function varargout = calcAbsorptionCoefWater(f,varargin)
 %
 % Input:
 %   f   - frequency [Hz] - scalar or column vector
-%   D   - temperature [deg. C]              [default: 10]
-%   T   - depth [m]                         [default: 100]
+%   D   - depth [m]                         [default: 100]
+%   T   - temperature [deg. C]              [default: 10]
 %   S   - salinity [ppt]                    [default: 35]
 %   pH  - acidity [pH]                      [default: 8]
 %
@@ -55,15 +55,17 @@ pH = 8;
 mode = 'fisher';
 
 switch nargin
-    case 4
+    case 5
         D = varargin{1};
         T = varargin{2};
         S = varargin{3};
         pH = varargin{4};
-    case 3
+        warning('Salinity and pH do not have an effect on the calculation')
+    case 4
         D = varargin{1};
         T = varargin{2};
         S = varargin{3};
+        warning('Salinity and pH do not have an effect on the calculation')
     case 3
         D = varargin{1};
         T = varargin{2};
@@ -74,35 +76,24 @@ switch nargin
         error('Incorrect number of parameters entered')
 end
 
-
 f = f(:);           % force frequency vector into column vector
 
 switch mode
     case 'thorp'
-        warning('This function computes alpha based on Thorp''s equation, which is valid for T=4 degC, D=1 kyd.')
+        warning('This function computes alpha based on Thorp''s equation, which is only valid for T=4 degC, D=1 kyd.')
         % calculate absorption at zero depth (based on eq. by Thorp)
         % assumes temperature of 4 deg. C and depth of 3000 ft.
         alpha = (0.1 * f.^2)./(1 + f.^2) + (40 * f.^2)./(4100 + f.^2) + 2.75e-4 * f.^2 + 0.003;
         
-        
-        % adjust for depth
-        if D > 0
-            Dhat = D * 3.2808399;       % convert depth in m to ft
-            alpha = alpha * (1 - 1.93e-5*Dhat);
-        end
-        
-        
         % convert to dB/m units from dB/ky
         alpha = alpha ./ 304.8;
-
-
+        
     case 'fisher'
+        % computation is based on pressure [atm]
+        phi = 45;           % latitude [deg]
+        P = 1;  %calcPressureFromDepth(D,phi);  % pressure [atm] at specified depth [m] and latitude [deg]
         
-        % convert depth to pressure
-        rho = 1025;  % density of sea water [kg/m³]
-        P = D/10; % approximation!  [atm]
-        P = 1;  % 0 depth
-        
+        % implement Fisher-Simmons 1977 equations
         A1 = (1.03e-8 + 2.36e-10 * T - 5.22e-12 * T.^2);
         A2 = (5.62e-8 + 7.52e-10 * T);
         A3 = (55.9 - 2.37 * T + 4.77e-2 * T.^2 - 3.48e-4 .* T.^3) .* 1e-15;
@@ -113,15 +104,22 @@ switch mode
         P2 = 1 - 10.3e-4 * P + 3.7e-7;
         P3 = 1 - 3.84e-4 * P + 7.57e-8;
         
+        % calculate absorption coefficient
         alpha = A1.*f1.*f.^2 ./ (f1.^2 + f.^2) + ...
             A2.*P2.*f2.*f.^2 ./ (f2.^2 + f.^2) + ...
             A3.*P3.*f.^2;
         
-        % convert to dB/km units from /m
+        % convert to dB/km units from m^-1
         alpha = alpha * 8686;
-        
 end
 
+
+% adjust for depth
+if D > 0
+    % From Urick pg. 108
+    Dhat = D * 3.2808399;       % convert depth in m to ft
+    alpha = alpha * (1 - 1.93e-5*Dhat);
+end
 
 % generate plot if no output arguments present
 if (length(f)>1 && nargout==0)
