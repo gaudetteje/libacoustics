@@ -41,6 +41,8 @@ function varargout = calcAbsorptionCoefWater(f,varargin)
 %
 %
 % See following references for more info:
+%    Ainslie, M. A. & McColm, J. G. "A simplified formula for viscous and
+%        chemical absorption in sea water." J. Acoust. Soc. Am. 103, 1671?1672.
 %    Urick 1983 "Principles of underwater sound" 3rd Edition, Penninsula
 %        Publishing, pg. 102-111
 %    Fisher and Simmons 1977 "Sound absorption in sea water" J. Acoust.
@@ -52,7 +54,7 @@ T = 10;
 S = 35;
 pH = 8;
 
-mode = 'fisher';
+mode = 'fisher';  %'ainslie'
 
 switch nargin
     case 5
@@ -111,15 +113,41 @@ switch mode
         
         % convert to dB/km units from m^-1
         alpha = alpha * 8686;
+        
+        % adjust for depth
+        if D > 0
+            % From Urick pg. 108
+            Dhat = D * 3.2808399;       % convert depth in m to ft
+            alpha = alpha * (1 - 1.93e-5*Dhat);
+        end
+        
+    case 'ainslie'
+        
+        % frequency is in kHz
+        f = f.*1e-3;
+        
+        
+        % boron frequency constant
+        f1 = 0.78 * (S./35)^0.5 .* exp(T./26);
+        
+        % magnesium frequency constant
+        f2 = 42 * exp(T./17);
+        
+        % boron effect
+        alpha1 = 0.106 * (f1 .* f.^2)./(f.^2 + f1.^2) * exp((pH - 8)./0.56);
+        
+        % magnesium effect
+        alpha2 = 0.52 * (1 + T./43) .* (S./35) .* ((f2 .* f.^2)./(f.^2 + f2.^2)) .* exp(-D./6);
+        
+        % general low-pass effect
+        alpha3 = 0.00049 * f.^2 .* exp(-(T./27 + D./17));
+        
+        % combined effects
+        alpha = alpha1 + alpha2 + alpha3;
+        
 end
 
 
-% adjust for depth
-if D > 0
-    % From Urick pg. 108
-    Dhat = D * 3.2808399;       % convert depth in m to ft
-    alpha = alpha * (1 - 1.93e-5*Dhat);
-end
 
 % generate plot if no output arguments present
 if (length(f)>1 && nargout==0)
