@@ -37,14 +37,12 @@ function varargout = calcAbsorptionCoef(f,varargin)
 %
 %
 % See following references for more info:
-%    Bass et al 1995 "Atmospheric absorption of sound: Further developments" J.
-%        Acoust. Soc. Am. 97 (1)
-%    Bass et al 1990 "Atmospheric absorption of sound: Update" J. Acoust. Soc.
-%        Am. 88 (4)
-%    Benny et al 2000 "Beam profile measurements and simulations for ultrasonic
-%        transducers operating in air" J. Acoust. Soc. Am. 107 (4)
-%    ANSI S1.26-1995, "American National Standard Method for the Calculation of
-%        the Absorption of Sound by the Atmosphere"
+%    Bass et al 1995 "Atmospheric absorption of sound: Further developments"
+%        J. Acoust. Soc. Am. 97 (1)
+%    Bass et al 1990 "Atmospheric absorption of sound: Update" J. Acoust.
+%        Soc. Am. 88 (4)
+%    ANSI S1.26-1995, "American National Standard Method for the Calculation
+%        of the Absorption of Sound by the Atmosphere"
 %    ISO 9613-1:1993, "Acoustics - Attenuation of sound during propagation
 %        outdoors - Part 1: Calculation of the absorption of sound by the
 %        atmosphere"
