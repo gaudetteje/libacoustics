@@ -4,8 +4,8 @@ clear
 clc
 figure
 % Calculate absorption coefficient across frequency for various humidity levels
-F = 10.^(3:.01:6);
-H = (10:10:100);
+F = 10.^(1:.01:6);
+H = (10:10:50);
 for h=H
     calcAbsorptionCoef(F,h,20);
     hold on

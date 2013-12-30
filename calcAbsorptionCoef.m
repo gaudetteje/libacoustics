@@ -71,13 +71,13 @@ end
 
 f = f(:);           % force frequency vector into column vector
 
-% step 0: define constants
+%% step 0: define constants
 P0  = 101.325;      % standard pressure (kPa)
 T0  = 293.15;       % standard temperature (K)
 T01 = 273.16;       % triple point of water (K)
 T   = T01 + T;      % convert temperature to Kelven
 
-% step 1: calculate saturation vapor pressure ratio, P_sat/P0 (%)
+%% step 1: calculate saturation vapor pressure ratio, P_sat/P0 (%)
 P_sat = 10^(...
     10.79586 * (1-(T01/T)) - ...
     5.02808 * log10(T/T01) + ...
@@ -85,20 +85,41 @@ P_sat = 10^(...
     4.2873e-4 * (-1 + 10^(4.76955*(1-T01/T))) - ...
     2.2195983);
 
-% step 2: calculate molar concentration of water vapor, h (%)
+%% step 2: calculate molar concentration of water vapor, h (%)
 h = h_r * P_sat * (P / P0)^-1;
 
-% step 3: calculate oxygen/nitrogen relaxation frequencies, f_rO & f_rN (Hz)
+%% step 3: calculate oxygen/nitrogen relaxation frequencies, f_rO & f_rN (Hz)
 f_rO = (P/P0) * (24 + (4.04e4 * h * (0.02 + h)/(0.391 + h)));
 f_rN = (P/P0) * (T/T0)^(-1/2) * (9 + 280 * h * exp(-4.17 * (T/T0)^(-1/3) - 1));
 
-% step 4: calculate dominant absorption components individually (nepers / m)
-alpha_cr = 1.84e-11 * (P/P0)^-1 * (T/T0)^(1/2);
-alpha_vO = 1.275e-2 * exp(-2239.1/T) .* (f_rO ./ (f_rO.^2 + f.^2));
-alpha_vN = 1.068e-1 * exp(-3352.0/T) .* (f_rN ./ (f_rN.^2 + f.^2));  % THIS TERM NEEDS TO BE LOOKED AT MORE CLOSELY - Rate shift due to alpha_vN occurs too low in frequency.  Not simply a function of f_rN.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% step 4: calculate dominant absorption components individually (nepers / m)
+% alpha_cr = 1.84e-11 * (P/P0)^-1 * (T/T0)^(1/2);
+% alpha_vO = 1.275e-2 * exp(-2239.1/T) .* (f_rO ./ (f_rO.^2 + f.^2));
+% alpha_vN = 1.068e-1 * exp(-3352.0/T) .* (f_rN ./ (f_rN.^2 + f.^2));  % THIS TERM NEEDS TO BE LOOKED AT MORE CLOSELY - Rate shift due to alpha_vN occurs too low in frequency.  Not simply a function of f_rN.
+% 
+% % resulting attenuation coefficient is a linear addition (dB / m)
+% alpha = 8.686 * f.^2 .* (alpha_cr + (T/T0)^(-5/2) .* (alpha_vO + alpha_vN));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %% step 4: calculate dominant absorption components individually (dB / m)
+% alpha_cr = 1.598e-10 * (P/P0)^-1 * (T/T0)^(1/2);
+% alpha_vO = 1.107e-1 * exp(-2239.1/T) .* (T/T0)^(-5/2);
+% alpha_vN = 9.277e-1 * exp(-3352.0/T) .* (T/T0)^(-5/2);  % THIS TERM NEEDS TO BE LOOKED AT MORE CLOSELY - Rate shift due to alpha_vN occurs too low in frequency.  Not simply a function of f_rN.
+% 
+% % resulting attenuation coefficient is a linear addition (dB / m)
+% alpha = alpha_cr .* f.^2 + ...
+%         alpha_vO .* (f.^2 .* f_rO) ./ (f_rO.^2 + f.^2) + ...
+%         alpha_vN .* (f.^2 .* f_rN) ./ (f_rN.^2 + f.^2);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% step 4: calculate dominant absorption components individually (dB / m)
+alpha_cr = 1.598e-10 * (P/P0)^-1 * (T/T0)^(1/2) .* f.^2;
+alpha_vO = 1.107e-1 * exp(-2239.1/T) .* (T/T0)^(-5/2) .* (f.^2 .* f_rO) ./ (f_rO.^2 + f.^2);
+alpha_vN = 9.277e-1 * exp(-3352.0/T) .* (T/T0)^(-5/2) .* (f.^2 .* f_rN) ./ (f_rN.^2 + f.^2);  % THIS TERM NEEDS TO BE LOOKED AT MORE CLOSELY - Rate shift due to alpha_vN occurs too low in frequency.  Not simply a function of f_rN.
 
 % resulting attenuation coefficient is a linear addition (dB / m)
-alpha = 8.686 * f.^2 .* (alpha_cr + (T/T0)^(-5/2) .* (alpha_vO + alpha_vN));
+alpha = alpha_cr + alpha_vO + alpha_vN;
 
 % generate plot if no output arguments present
 if (length(f)>1 && nargout==0)
