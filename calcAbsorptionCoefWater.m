@@ -39,10 +39,18 @@ function varargout = calcAbsorptionCoefWater(f,varargin)
 %   atmospheric absorption losses
 %
 %
+% Validity:
+%    The Ainslie equations are simplified from the Francois-Garrison formula
+%    and are valid (<10% error from F.G. between 100Hz and 1MHz) under the
+%    following environmental conditions:
+%       -6 < T < 35 [degC]  (S=35ppt, pH=8, D=0m)
+%       7.7 < pH < 8.3      (T=10degC, S=35ppt, D=0m)
+%       5<S<50 [ppt]        (T=10degC, pH=8, D=0m)
+%       0<D<7 [km]          (T=10degC, S=35ppt, pH=8)
 %
 % See following references for more info:
 %    Ainslie, M. A. & McColm, J. G. "A simplified formula for viscous and
-%        chemical absorption in sea water." J. Acoust. Soc. Am. 103, 1671?1672.
+%        chemical absorption in sea water." J. Acoust. Soc. Am. 103, 1671-1672.
 %    Urick 1983 "Principles of underwater sound" 3rd Edition, Penninsula
 %        Publishing, pg. 102-111
 %    Fisher and Simmons 1977 "Sound absorption in sea water" J. Acoust.
@@ -54,7 +62,7 @@ T = 10;
 S = 35;
 pH = 8;
 
-mode = 'fisher';  %'ainslie'
+mode = 'ainslie'; %'fisher';  %
 
 switch nargin
     case 5
@@ -123,23 +131,22 @@ switch mode
         
     case 'ainslie'
         
-        % frequency is in kHz
+        % frequency defined in kHz
         f = f.*1e-3;
         
-        
         % boron frequency constant
-        f1 = 0.78 * (S./35)^0.5 .* exp(T./26);
+        f1 = 0.78 * (S./35).^0.5 .* exp(T./26);
         
         % magnesium frequency constant
         f2 = 42 * exp(T./17);
         
-        % boron effect
+        % boric acid relaxation (low frequency < ~3 kHz)
         alpha1 = 0.106 * (f1 .* f.^2)./(f.^2 + f1.^2) * exp((pH - 8)./0.56);
         
-        % magnesium effect
+        % magnesium sulfate relaxation (intermediate frequency < ~300 kHz)
         alpha2 = 0.52 * (1 + T./43) .* (S./35) .* ((f2 .* f.^2)./(f.^2 + f2.^2)) .* exp(-D./6);
         
-        % general low-pass effect
+        % viscous absorption (high frequency > 100 kHz)
         alpha3 = 0.00049 * f.^2 .* exp(-(T./27 + D./17));
         
         % combined effects
