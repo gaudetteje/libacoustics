@@ -70,12 +70,10 @@ switch nargin
         T = varargin{2};
         S = varargin{3};
         pH = varargin{4};
-        warning('Salinity and pH do not have an effect on the calculation')
     case 4
         D = varargin{1};
         T = varargin{2};
         S = varargin{3};
-        warning('Salinity and pH do not have an effect on the calculation')
     case 3
         D = varargin{1};
         T = varargin{2};
@@ -130,7 +128,6 @@ switch mode
         end
         
     case 'ainslie'
-        
         % frequency defined in kHz
         f = f.*1e-3;
         
@@ -166,4 +163,7 @@ if (length(f)>1 && nargout==0)
     title(sprintf('Atmospheric absorption coef. (T=%.1fC, D=%.1fm, S=%.1fppt, pH=%.1f)',T,D,S,pH))
 else
     varargout{1} = alpha;
+    varargout{2} = alpha1;
+    varargout{3} = alpha2;
+    varargout{4} = alpha3;
 end

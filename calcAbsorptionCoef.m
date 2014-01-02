@@ -90,7 +90,7 @@ h = h_r * P_sat * (P / P0)^-1;
 
 %% step 3: calculate oxygen/nitrogen relaxation frequencies, f_rO & f_rN (Hz)
 f_rO = (P/P0) * (24 + (4.04e4 * h * (0.02 + h)/(0.391 + h)));
-f_rN = (P/P0) * (T/T0)^(-1/2) * (9 + 280 * h * exp(-4.17 * (T/T0)^(-1/3) - 1));
+f_rN = (P/P0) * (T/T0)^(-1/2) * (9 + 280 * h * exp(-4.17 * ((T/T0)^(-1/3) - 1)));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % %% step 4: calculate dominant absorption components individually (nepers / m)
