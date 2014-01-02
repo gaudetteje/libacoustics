@@ -57,7 +57,7 @@ function varargout = calcAbsorptionCoefWater(f,varargin)
 %        Soc. Am. 62 (3)
 
 % assign default values
-D = 100;
+D = 0;
 T = 10;
 S = 35;
 pH = 8;
@@ -138,16 +138,16 @@ switch mode
         f2 = 42 * exp(T./17);
         
         % boric acid relaxation (low frequency < ~3 kHz)
-        alpha1 = 0.106 * (f1 .* f.^2)./(f.^2 + f1.^2) * exp((pH - 8)./0.56);
+        alpha_vB = 0.106 * (f1 .* f.^2)./(f.^2 + f1.^2) * exp((pH - 8)./0.56);
         
         % magnesium sulfate relaxation (intermediate frequency < ~300 kHz)
-        alpha2 = 0.52 * (1 + T./43) .* (S./35) .* ((f2 .* f.^2)./(f.^2 + f2.^2)) .* exp(-D./6);
+        alpha_vM = 0.52 * (1 + T./43) .* (S./35) .* ((f2 .* f.^2)./(f.^2 + f2.^2)) .* exp(-D./6);
         
         % viscous absorption (high frequency > 100 kHz)
-        alpha3 = 0.00049 * f.^2 .* exp(-(T./27 + D./17));
+        alpha_cr = 0.00049 * f.^2 .* exp(-(T./27 + D./17));
         
         % combined effects
-        alpha = alpha1 + alpha2 + alpha3;
+        alpha = alpha_cr + alpha_vB + alpha_vM;
         
 end
 
@@ -163,7 +163,7 @@ if (length(f)>1 && nargout==0)
     title(sprintf('Atmospheric absorption coef. (T=%.1fC, D=%.1fm, S=%.1fppt, pH=%.1f)',T,D,S,pH))
 else
     varargout{1} = alpha;
-    varargout{2} = alpha1;
-    varargout{3} = alpha2;
-    varargout{4} = alpha3;
+    varargout{2} = alpha_cr;
+    varargout{3} = alpha_vB;
+    varargout{4} = alpha_vM;
 end

@@ -93,26 +93,6 @@ f_rO = (P/P0) * (24 + (4.04e4 * h * (0.02 + h)/(0.391 + h)));
 f_rN = (P/P0) * (T/T0)^(-1/2) * (9 + 280 * h * exp(-4.17 * ((T/T0)^(-1/3) - 1)));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %% step 4: calculate dominant absorption components individually (nepers / m)
-% alpha_cr = 1.84e-11 * (P/P0)^-1 * (T/T0)^(1/2);
-% alpha_vO = 1.275e-2 * exp(-2239.1/T) .* (f_rO ./ (f_rO.^2 + f.^2));
-% alpha_vN = 1.068e-1 * exp(-3352.0/T) .* (f_rN ./ (f_rN.^2 + f.^2));  % THIS TERM NEEDS TO BE LOOKED AT MORE CLOSELY - Rate shift due to alpha_vN occurs too low in frequency.  Not simply a function of f_rN.
-% 
-% % resulting attenuation coefficient is a linear addition (dB / m)
-% alpha = 8.686 * f.^2 .* (alpha_cr + (T/T0)^(-5/2) .* (alpha_vO + alpha_vN));
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% %% step 4: calculate dominant absorption components individually (dB / m)
-% alpha_cr = 1.598e-10 * (P/P0)^-1 * (T/T0)^(1/2);
-% alpha_vO = 1.107e-1 * exp(-2239.1/T) .* (T/T0)^(-5/2);
-% alpha_vN = 9.277e-1 * exp(-3352.0/T) .* (T/T0)^(-5/2);  % THIS TERM NEEDS TO BE LOOKED AT MORE CLOSELY - Rate shift due to alpha_vN occurs too low in frequency.  Not simply a function of f_rN.
-% 
-% % resulting attenuation coefficient is a linear addition (dB / m)
-% alpha = alpha_cr .* f.^2 + ...
-%         alpha_vO .* (f.^2 .* f_rO) ./ (f_rO.^2 + f.^2) + ...
-%         alpha_vN .* (f.^2 .* f_rN) ./ (f_rN.^2 + f.^2);
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% step 4: calculate dominant absorption components individually (dB / m)
 alpha_cr = 1.598e-10 * (P/P0)^-1 * (T/T0)^(1/2) .* f.^2;
 alpha_vO = 1.107e-1 * exp(-2239.1/T) .* (T/T0)^(-5/2) .* (f.^2 .* f_rO) ./ (f_rO.^2 + f.^2);
