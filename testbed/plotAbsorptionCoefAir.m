@@ -136,8 +136,9 @@ tilefigs(5:8,'keep')
 f = 10.^(1:.01:6);
 h_r = 50;               % 50% relative humidity [%]
 T = 20;                 % 20 degrees [celcius]
+p = 101.325;
 
-[a1,acr,aO,aN] = calcAbsorptionCoef(f,h_r,T);
+[a1,acr,aO,aN] = calcAbsorptionCoef(f,h_r,T,p);
 figure('color','white')
 loglog(f,acr,'g',f,aO,'r',f,aN,'b',f,a1,'k');
 legend('\alpha_{cr}','\alpha_{v,O}','\alpha_{v,N}','\alpha_{tot}','location','best')
