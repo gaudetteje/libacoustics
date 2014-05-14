@@ -129,7 +129,7 @@ switch mode
         
     case 'ainslie'
         % frequency defined in kHz
-        f = f.*1e-3;
+        f_k = f.*1e-3;
         
         % boron frequency constant
         f1 = 0.78 * (S./35).^0.5 .* exp(T./26);
@@ -138,13 +138,13 @@ switch mode
         f2 = 42 * exp(T./17);
         
         % boric acid relaxation (low frequency < ~3 kHz)
-        alpha_vB = 0.106 * (f1 .* f.^2)./(f.^2 + f1.^2) * exp((pH - 8)./0.56);
+        alpha_vB = 0.106 * (f1 .* f_k.^2)./(f_k.^2 + f1.^2) * exp((pH - 8)./0.56);
         
         % magnesium sulfate relaxation (intermediate frequency < ~300 kHz)
-        alpha_vM = 0.52 * (1 + T./43) .* (S./35) .* ((f2 .* f.^2)./(f.^2 + f2.^2)) .* exp(-D./6);
+        alpha_vM = 0.52 * (1 + T./43) .* (S./35) .* ((f2 .* f_k.^2)./(f_k.^2 + f2.^2)) .* exp(-D./6);
         
         % viscous absorption (high frequency > 100 kHz)
-        alpha_cr = 0.00049 * f.^2 .* exp(-(T./27 + D./17));
+        alpha_cr = 0.00049 * f_k.^2 .* exp(-(T./27 + D./17));
         
         % combined effects
         alpha = alpha_cr + alpha_vB + alpha_vM;
