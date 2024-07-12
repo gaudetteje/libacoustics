@@ -1,4 +1,4 @@
-function c = calcSoundSpeedWater(varargin)
+function c = calcSoundSpeedMedwin(varargin)
 % calcSoundSpeedWater  returns the speed of sound in water given
 %   temperature, salinity, and depth.
 %
@@ -18,10 +18,10 @@ function c = calcSoundSpeedWater(varargin)
 %
 % Notes:
 %   T, S, or D can be entered as an array for multiple vector calculations
-%   This implementation is valid only for the following limits:
-%      0 <= T <= 30
-%      30 <= S <= 40
-%      0 <= D <= 8000
+%   This implementation is valid for the following range:
+%      0 <= T <= 35
+%      0 <= S <= 45
+%      0 <= D <= 1000
 %
 % Default values:
 %   T = 10 deg. C
@@ -31,8 +31,8 @@ function c = calcSoundSpeedWater(varargin)
 % See:
 %   Urick (1983) Principles of Underwater Sound, 3rd Edition, Peninsula
 %     Publishing, Los Altos, CA, pp. 113
-%   Mackenzie, K.V. (1981) Nine-term Equation for Sound Speed in the
-%     Oceans, J. Acoust. Soc. Am., 70:807
+%   Medwin (1975) Speed of sound in water: A simple equation for realistic 
+%     parameters, J. Acoust. Soc. Am., 58 (6), pp. 1318
 
 % Default user parameters
 T = 10;
@@ -57,24 +57,16 @@ switch(nargin)
 end
 
 % check input value range
-if any(T < 0 | T > 30)
-    warning('CALCSOUNDSPEED:Temp','Temperature out of valid range!')
-end
-if any(S < 30 | S > 40)
-    warning('CALCSOUNDSPEED:Salinity','Salinity out of valid range!')
-end
-if any(D < 0 | D > 8000)
-    warning('CALCSOUNDSPEED:Depth','Depth out of valid range!')
-end
+%if any(T < 0 | T > 35)
+%    warning('CALCSOUNDSPEED:Temp','Temperature out of valid range!')
+%end
+%if any(S < 0 | S > 45)
+%    warning('CALCSOUNDSPEED:Salinity','Salinity out of valid range!')
+%end
+%if any(D < 0 | D > 1000)
+%    warning('CALCSOUNDSPEED:Depth','Depth out of valid range!')
+%end
 
 % compute the value(s)
-c = 1448.96 + 4.591*T - 5.304e-3 * T.^2 ...
-    + 2.374e-4 * T.^3 + 1.340 * (S - 35) ...
-    + 1.630e-2 * D + 1.675e-7 * D.^2 ...
-    - 1.025e-2 * T .* (S - 35) - 7.139e-13 * T .* D.^3;
-
-% alternative version - Medwin 1975
-%c = 1449.2 + 4.6*T - 0.055*T.^2 + 0.00029*T.^3 + (1.34 - 0.01*T)*(S - 35) + 0.016*D;
-
-% alternative version - from Mirkin
-%c = 1412 + 3.21*T + 1.19*S + 0.0167*D;
+c = 1449.2 + 4.6*T - 0.055*T.^2 + 0.00029*T.^3 + ...
+    (1.34 - 0.01*T).*(S - 35) + 0.016*D;
